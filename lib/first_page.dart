@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
+// TODO USE PROVIDER AS STATE MANAGEMENT
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'package:galeri/detail_page.dart';
-import 'package:galeri/model.dart';
-import 'package:galeri/pictures.dart';
+import 'package:galeri/first_page_appbar.dart';
+import 'package:galeri/first_page_fab.dart';
+import 'package:galeri/firt_page_body.dart';
+
+//https://github.com/sivaprasadnk/double_tap_to_exit/blob/master/lib/double_tap_to_exit.dart
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
@@ -14,74 +17,39 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
+  DateTime preBackPressTime = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {
-        // TODO(Nadir): Bir kez geri tuşuna basarsa kullanıcıya şu mesajı verelim: "Uygulamadan çıkmak için 3 sn içinde tekrar geri tuşuna basın"
-        // 3 sn içinde tekrar geri tuşuna basarsa, kullanıcı app'ten çıkabilsin
-        // 3 sn içinde tekrar geri tuşuna basmamışsa, yukarıdaki mesajı tekrar göster
-        return Future.value(false);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              onPressed: () {
-                //TODO(Levent): Resim yükleme özelliği geliştirilecek
-              },
-              icon: const Icon(
-                Icons.upload,
-              ),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            Image.asset(
-              "assets/images/flower.png",
-              height: double.infinity,
-              repeat: ImageRepeat.repeat,
-            ),
-            SafeArea(
-              child: GridView.count(
-                crossAxisCount: 3,
-                padding: const EdgeInsets.all(20),
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                scrollDirection: Axis.vertical,
-                children: [
-                  for (var picture in Assets.pictures) gridViewItem(picture),
-                ],
-              ),
-            ),
-          ],
-        ),
+      onWillPop: () => warningState(),
+      child: const Scaffold(
+        appBar: FirstPageAppBar(),
+        body: FirstPageBody(),
+        floatingActionButton: FirstPageFab(), //<---
       ),
     );
   }
 
-  Widget gridViewItem(Picture picture) {
-    final imagePath = "assets/images/${picture.picName}.${picture.type}";
-    return InkWell(
-      child: Container(
-        child: picture.type != "svg"
-            ? Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-              )
-            : SvgPicture.asset(imagePath),
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (contex) => DetailPage(
-              picture: picture,
-            ),
-          ),
-        );
-      },
-    );
+  Future<bool> warningState() async {
+    //The `onWillPop` function is called when the user presses the back button. It’s a callback that returns a `Future<bool>`.
+
+    final timeGap = DateTime.now().difference(preBackPressTime);
+
+    //print("$timeGap");
+
+    final noExit = timeGap >= const Duration(seconds: 3);
+
+    preBackPressTime = DateTime.now();
+
+    if (noExit) {
+      //show toastmessage
+      Fluttertoast.showToast(
+          msg: "Press Back Button Again to Exit in 3 seconds");
+
+      return false;
+    } else {
+      return true;
+    }
   }
 }

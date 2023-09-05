@@ -1,12 +1,23 @@
+import 'dart:io';
+
+enum ImgSource {
+  assets,
+  file,
+}
+
 class Picture {
-  final String picName;
-  final String type;
+  final String? picName; // asset
+  final File? file; // device file
+  final String? type; // asset
   final User user;
+  final ImgSource source;
 
   Picture({
-    required this.picName,
-    required this.type,
+    this.picName,
+    this.file,
+    this.type,
     required this.user,
+    required this.source,
   });
 }
 
