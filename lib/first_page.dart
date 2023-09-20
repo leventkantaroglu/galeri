@@ -1,13 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+//TODO: USE PROVIDER AS STATE MANAGEMENT
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
-
-import 'package:galeri/detail_page.dart';
-import 'package:galeri/model.dart';
-import 'package:galeri/pictures.dart';
+import 'package:galeri/fist_page_appbar.dart';
+import 'package:galeri/fist_page_body.dart';
+import 'package:galeri/fist_page_fab.dart';
 
 //TODO(nadir): Bir kez geri tuşuna basarsa kullanıcıya şu mesajı verelim: "Uygulamdan çıkmak için 3 sn içinde tekrar geri tuşuna basın. print ettir  veya"(-toas-popup mesajı)
 //3 sn içinde tekrar geri tuşuna basarsa, kullanıcı app'dan çıkabilsin.
@@ -25,74 +21,17 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   DateTime preBackPressTime = DateTime.now();
-  //?? burada sürekli bir zaman mı kaydediliyor??
-
-  late File selectedImage;
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () => warningState(),
-      child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              onPressed: () {
-                // TODO (levent): Rsim yükleme özelliği geliştirilecek.
-                getImageFromDevice(ImageSource.gallery);
-              },
-              icon: const Icon(Icons.upload),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            Image.asset(
-              "assets/images/flower.png",
-              height: double.infinity,
-              repeat: ImageRepeat.repeat,
-            ),
-            SafeArea(
-              child: GridView.count(
-                crossAxisCount: 3,
-                padding: const EdgeInsets.all(20),
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                scrollDirection: Axis.vertical,
-                children: [
-                  for (var picture in Assets.pictures) gridViewItem(picture),
-                ],
-              ),
-            ),
-          ],
-        ),
+      child: const Scaffold(
+        appBar: FisrtPageAppBarr(),
+        body: FirstPageBody(),
+        floatingActionButton:
+            FirstPageFab(), //<----set state başlangıçta burada olduğu için sadece burayı renderlar. Ekrana kahve resmi gelmesi için body'nin de set state'e dahil olması lazım
       ),
-    );
-  }
-
-  Widget gridViewItem(Picture picture) {
-    final imagePath = "assets/images/${picture.picName}.${picture.type}";
-    return InkWell(
-      child: Container(
-        child: picture.type != "svg"
-            ? Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-              )
-            : SvgPicture.asset(
-                imagePath,
-              ),
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (contex) => DetailPage(
-              picture: picture,
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -101,7 +40,7 @@ class _FirstPageState extends State<FirstPage> {
 
     final timeGap = DateTime.now().difference(preBackPressTime);
 
-    print("$timeGap");
+    // print("$timeGap");
 
     final noExit = timeGap >= const Duration(seconds: 3);
 
@@ -116,18 +55,5 @@ class _FirstPageState extends State<FirstPage> {
     } else {
       return true;
     }
-  }
-
-  Future getImageFromDevice(ImageSource imageSource) async {
-    final picker = ImagePicker();
-    final selected = await picker.pickImage(source: imageSource);
-
-    //getImage(source: imageSource);
-
-    setState(() {
-      if (selected != null) {
-        selectedImage = File(selected.path);
-      }
-    });
   }
 }
